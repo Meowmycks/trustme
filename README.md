@@ -44,8 +44,6 @@ x86_64-w64-mingw32-gcc -c trustme.c -o trustme.x64.o -masm=intel -Wall
 cl.exe /c /GS- /Fo"trustme.x64.o" trustme.c
 ```
 
-Or just run `build.sh` / `build.bat`.
-
 ## Usage
 
 1. Place `trustme.x64.o` (and/or `trustme.x86.o`) in the same directory as `trustme.cna`
